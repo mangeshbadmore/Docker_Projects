@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: 'mongo'
+    volumes:
+      - mongodb-data:/data/db
+      # environment:
+      # MONGO_INITDB_ROOT_USERNAME: max
+      # MONGO_INITDB_ROOT_PASSWORD: secret
+    env_file:
+      - ./env_var_file/DB.properties
+    container_name: mongodb
+
+  backend:
+    depends_on:
+      - mongodb
+    build: ./backend
+    # build:
+    #   context: ./backend
+    #   dockerfile: Dockerfile-
+    volumes:
+      - logs:/app/logs
+      - /app/node_modules
+      - ./backend:/app
+    env_file:
+      - ./env_var_file/DB.properties
+    ports:
+      - '80:80'
+    container_name: BE
+
+  frontend:
+    depends_on:
+      - backend
+      - mongodb
+    build: ./frontend
+    volumes:
+      - ./frontend/src:/app/src
+    ports:
+      - '3000:3000'
+    stdin_open: true
+    tty: true
+    container_name: FE
+
+volumes:
+  mongodb-data:
+  logs:
